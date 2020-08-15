@@ -15,72 +15,57 @@ const (
 )
 
 type Form interface {
-	IsValid(r *http.Request) bool
-	Messages() json.Marshaler
-	Reset()
+	Validate(r *http.Request) Message
 }
 
 func New(fields ...Field) Form {
-	return &form{
-		fields: fields,
-		errs:   make(errors),
-	}
+	return &form{fields}
 }
 
 type form struct {
 	fields []Field
-	errs   errors
 }
 
-func (f *form) IsValid(r *http.Request) bool {
+func (f *form) Validate(r *http.Request) Message {
+	var errs = make(errors)
 	var err = r.ParseForm()
 	if err != nil {
-		f.errs.add(errorField, invalidForm)
-		return false
+		errs.add(errorField, invalidForm)
+		return errs
 	}
 	if r.Method == http.MethodGet {
-		return f.validForm(r.Form)
+		f.validForm(r.Form, errs)
+		return errs
 	}
 	var content = r.Header.Get(headerContentType)
 	switch {
 	case strings.HasPrefix(content, mimeApplicationJSON):
-		return f.validJSON(r.Body)
+		f.validJSON(r.Body, errs)
 	case strings.HasPrefix(content, mimeApplicationForm):
-		return f.validForm(r.PostForm)
+		f.validForm(r.PostForm, errs)
 	default:
-		f.errs.add(errorField, unsupportedContent)
-		return false
+		errs.add(errorField, unsupportedContent)
 	}
+	return errs
 }
 
-func (f *form) validJSON(rc io.Reader) bool {
+func (f *form) validJSON(rc io.Reader, errs errors) {
 	var dest = make(map[string]interface{})
 	var err = json.NewDecoder(rc).Decode(&dest)
 	if err != nil {
-		f.errs.add(errorField, invalidJSON)
-		return false
+		errs.add(errorField, invalidJSON)
 	}
 	for _, field := range f.fields {
-		f.errs.addBulk(field.Name(), field.Validate(dest[field.Name()]))
+		errs.addBulk(field.Name(), field.Validate(dest[field.Name()]))
 	}
-	return f.errs.empty()
 }
 
-func (f *form) validForm(v url.Values) bool {
+func (f *form) validForm(v url.Values, errs errors) {
 	for _, field := range f.fields {
 		if _, ok := v[field.Name()]; ok {
-			f.errs.addBulk(field.Name(), field.Validate(field.Convert(v.Get(field.Name()))))
+			errs.addBulk(field.Name(), field.Validate(field.Convert(v.Get(field.Name()))))
 		} else {
-			f.errs.addBulk(field.Name(), field.Validate(nil))
+			errs.addBulk(field.Name(), field.Validate(nil))
 		}
 	}
-	return f.errs.empty()
-}
-
-func (f *form) Messages() json.Marshaler {
-	return f.errs
-}
-
-func (f *form) Reset() {
-	f.errs = make(errors)
 }

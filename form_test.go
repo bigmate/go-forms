@@ -24,23 +24,25 @@ func Test_form_IsValid(t *testing.T) {
 				return
 			}
 			req.Header.Set(headerContentType, mimeApplicationForm)
-			defer userForm.Reset()
-			if !userForm.IsValid(req) {
-				fmt.Println(name, userForm.Messages())
+			var ve = userForm.Validate(req)
+			if !ve.Ok() {
+				fmt.Println(name, ve)
 			}
 			wg.Done()
 		}("FIRST", "name=bekmamat&age=25&married=false")
 	}
 	for i := 0; i < 500; i++ {
+		i := i
 		go func(name, query string) {
 			var req, err = http.NewRequest(http.MethodGet, "/?"+query, nil)
 			if err != nil {
+				wg.Done()
 				return
 			}
 			req.Header.Set(headerContentType, mimeApplicationForm)
-			defer userForm.Reset()
-			if !userForm.IsValid(req) {
-				fmt.Println(name, userForm.Messages())
+			var ve = userForm.Validate(req)
+			if !ve.Ok() {
+				fmt.Println(i)
 			}
 			wg.Done()
 		}("SECOND", "name=be&age=17&married=false")

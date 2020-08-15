@@ -7,17 +7,28 @@ import (
 
 const errorField = "error"
 
+type Message interface {
+	Ok() bool
+	String() string
+	Serialize() []byte
+	MarshalJSON() ([]byte, error)
+}
+
 type errors map[string][]string
 
+func (e errors) Ok() bool {
+	return e.empty()
+}
+
 func (e errors) String() string {
-	return string(e.serialize())
+	return string(e.Serialize())
 }
 
 func (e errors) MarshalJSON() ([]byte, error) {
-	return e.serialize(), nil
+	return e.Serialize(), nil
 }
 
-func (e errors) serialize() []byte {
+func (e errors) Serialize() []byte {
 	var counter int
 	var buff bytes.Buffer
 	buff.WriteString("{")

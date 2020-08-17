@@ -6,16 +6,8 @@ var (
 	invalidForm        = "Invalid form"
 	unsupportedContent = "Unsupported content"
 	invalidJSON        = "Invalid json"
-	fieldRequired      = "field is required"
-	typeMismatch       = "expected value type: %s"
-)
-
-type Lang int
-
-const (
-	RU Lang = 1 << iota
-	KG
-	AZ
+	fieldRequired      = "Field is required"
+	typeMismatch       = "Expected value type: %s"
 )
 
 func t(msg string, args ...interface{}) string {

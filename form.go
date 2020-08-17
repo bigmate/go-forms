@@ -34,22 +34,22 @@ func (f *form) Validate(r *http.Request) Message {
 		return errs
 	}
 	if r.Method == http.MethodGet {
-		f.validForm(r.Form, errs)
+		f.validateForm(r.Form, errs)
 		return errs
 	}
 	var content = r.Header.Get(headerContentType)
 	switch {
 	case strings.HasPrefix(content, mimeApplicationJSON):
-		f.validJSON(r.Body, errs)
+		f.validateJSON(r.Body, errs)
 	case strings.HasPrefix(content, mimeApplicationForm):
-		f.validForm(r.PostForm, errs)
+		f.validateForm(r.PostForm, errs)
 	default:
 		errs.add(errorField, unsupportedContent)
 	}
 	return errs
 }
 
-func (f *form) validJSON(rc io.Reader, errs errors) {
+func (f *form) validateJSON(rc io.Reader, errs errors) {
 	var dest = make(map[string]interface{})
 	var err = json.NewDecoder(rc).Decode(&dest)
 	if err != nil {
@@ -60,7 +60,7 @@ func (f *form) validJSON(rc io.Reader, errs errors) {
 	}
 }
 
-func (f *form) validForm(v url.Values, errs errors) {
+func (f *form) validateForm(v url.Values, errs errors) {
 	for _, field := range f.fields {
 		if _, ok := v[field.Name()]; ok {
 			errs.addBulk(field.Name(), field.Validate(field.Convert(v.Get(field.Name()))))

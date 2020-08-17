@@ -1,7 +1,6 @@
 package forms
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 	"testing"
@@ -26,13 +25,12 @@ func Test_form_IsValid(t *testing.T) {
 			req.Header.Set(headerContentType, mimeApplicationForm)
 			var ve = userForm.Validate(req)
 			if !ve.Ok() {
-				fmt.Println(name, ve)
+				t.Error(ve)
 			}
 			wg.Done()
 		}("FIRST", "name=bekmamat&age=25&married=false")
 	}
 	for i := 0; i < 500; i++ {
-		i := i
 		go func(name, query string) {
 			var req, err = http.NewRequest(http.MethodGet, "/?"+query, nil)
 			if err != nil {
@@ -41,8 +39,8 @@ func Test_form_IsValid(t *testing.T) {
 			}
 			req.Header.Set(headerContentType, mimeApplicationForm)
 			var ve = userForm.Validate(req)
-			if !ve.Ok() {
-				fmt.Println(i)
+			if ve.Ok() {
+				t.Error(ve)
 			}
 			wg.Done()
 		}("SECOND", "name=be&age=17&married=false")

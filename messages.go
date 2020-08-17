@@ -1,12 +1,11 @@
 package forms
 
 import (
-	"fmt"
 	"golang.org/x/text/language"
-	"golang.org/x/text/message/catalog"
+	"golang.org/x/text/message"
 )
 
-var (
+const (
 	invalidForm        = "Invalid form"
 	unsupportedContent = "Unsupported content"
 	invalidJSON        = "Invalid json"
@@ -14,32 +13,45 @@ var (
 	typeMismatch       = "Expected value type: %s"
 )
 
+var pt *message.Printer
+
 func t(msg string, args ...interface{}) string {
-	return fmt.Sprintf(msg, args...)
+	return pt.Sprintf(msg, args...)
 }
 
 func T(msg string, args ...interface{}) error {
 	return newError(t(msg, args...))
 }
 
+func SetLanguage(lang string) {
+	pt = message.NewPrinter(message.MatchLanguage(lang))
+}
+
 func init() {
-	var cat = catalog.NewBuilder()
 
-	cat.Set(language.English, invalidForm, catalog.String(invalidForm))
-	cat.Set(language.English, unsupportedContent, catalog.String(unsupportedContent))
-	cat.Set(language.English, invalidJSON, catalog.String(invalidJSON))
-	cat.Set(language.English, fieldRequired, catalog.String(fieldRequired))
-	cat.Set(language.English, typeMismatch, catalog.String(typeMismatch))
+	message.SetString(language.English, invalidForm, invalidForm)
+	message.SetString(language.English, unsupportedContent, unsupportedContent)
+	message.SetString(language.English, invalidJSON, invalidJSON)
+	message.SetString(language.English, fieldRequired, fieldRequired)
+	message.SetString(language.English, typeMismatch, typeMismatch)
 
-	cat.Set(language.Kirghiz, invalidForm, catalog.String("Форма туура эмес"))
-	cat.Set(language.Kirghiz, unsupportedContent, catalog.String("Колдоого алынбаган контент"))
-	cat.Set(language.Kirghiz, invalidJSON, catalog.String("Жараксыз JSON"))
-	cat.Set(language.Kirghiz, fieldRequired, catalog.String("Талаа толтурулушу керек"))
-	cat.Set(language.Kirghiz, typeMismatch, catalog.String("Күтүлүүчү маани түрү: %s"))
+	message.SetString(language.Kirghiz, invalidForm, "Форма туура эмес")
+	message.SetString(language.Kirghiz, unsupportedContent, "Колдоого алынбаган контент")
+	message.SetString(language.Kirghiz, invalidJSON, "Жараксыз JSON")
+	message.SetString(language.Kirghiz, fieldRequired, "Талаа толтурулушу керек")
+	message.SetString(language.Kirghiz, typeMismatch, "Күтүлүүчү маани түрү: %s")
 
-	cat.Set(language.Russian, invalidForm, catalog.String("Неверная форма"))
-	cat.Set(language.Russian, unsupportedContent, catalog.String("Неподдерживаемый контент"))
-	cat.Set(language.Russian, invalidJSON, catalog.String("Неверный JSON"))
-	cat.Set(language.Russian, fieldRequired, catalog.String("Поле, обязательное для заполнения"))
-	cat.Set(language.Russian, typeMismatch, catalog.String("Ожидаемый тип значения: %s"))
+	message.SetString(language.Russian, invalidForm, "Неверная форма")
+	message.SetString(language.Russian, unsupportedContent, "Неподдерживаемый контент")
+	message.SetString(language.Russian, invalidJSON, "Неверный JSON")
+	message.SetString(language.Russian, fieldRequired, "Обязательно к заполнению")
+	message.SetString(language.Russian, typeMismatch, "Ожидаемый тип значения: %s")
+
+	message.SetString(language.Azerbaijani, invalidForm, "Yanlış forma")
+	message.SetString(language.Azerbaijani, unsupportedContent, "Dəstəklənməyən məzmun")
+	message.SetString(language.Azerbaijani, invalidJSON, "Yanlış JSON")
+	message.SetString(language.Azerbaijani, fieldRequired, "Doldurmaq üçün tələb olunur")
+	message.SetString(language.Azerbaijani, typeMismatch, "Gözlənilən dəyər növü:% s")
+
+	SetLanguage("en")
 }

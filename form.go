@@ -54,6 +54,7 @@ func (f *form) validateJSON(rc io.Reader, errs errors) {
 	var err = json.NewDecoder(rc).Decode(&dest)
 	if err != nil {
 		errs.add(errorField, t(invalidJSON))
+		return
 	}
 	for _, field := range f.fields {
 		errs.addBulk(field.Name(), field.Validate(dest[field.Name()]))

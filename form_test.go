@@ -14,6 +14,7 @@ var userForm = New(
 )
 
 func Test_form_IsValid(t *testing.T) {
+	t.Log(T("Working: %v", 15))
 	var wg sync.WaitGroup
 	wg.Add(1000)
 	for i := 0; i < 500; i++ {

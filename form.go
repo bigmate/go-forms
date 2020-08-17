@@ -30,7 +30,7 @@ func (f *form) Validate(r *http.Request) Message {
 	var errs = make(errors)
 	var err = r.ParseForm()
 	if err != nil {
-		errs.add(errorField, invalidForm)
+		errs.add(errorField, t(invalidForm))
 		return errs
 	}
 	if r.Method == http.MethodGet {
@@ -44,7 +44,7 @@ func (f *form) Validate(r *http.Request) Message {
 	case strings.HasPrefix(content, mimeApplicationForm):
 		f.validateForm(r.PostForm, errs)
 	default:
-		errs.add(errorField, unsupportedContent)
+		errs.add(errorField, t(unsupportedContent))
 	}
 	return errs
 }
@@ -53,7 +53,7 @@ func (f *form) validateJSON(rc io.Reader, errs errors) {
 	var dest = make(map[string]interface{})
 	var err = json.NewDecoder(rc).Decode(&dest)
 	if err != nil {
-		errs.add(errorField, invalidJSON)
+		errs.add(errorField, t(invalidJSON))
 	}
 	for _, field := range f.fields {
 		errs.addBulk(field.Name(), field.Validate(dest[field.Name()]))

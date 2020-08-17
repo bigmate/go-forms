@@ -13,7 +13,7 @@ const (
 	typeMismatch       = "Expected value type: %s"
 )
 
-var pt *message.Printer
+var pt = message.NewPrinter(language.English)
 
 func t(msg string, args ...interface{}) string {
 	return pt.Sprintf(msg, args...)
@@ -52,6 +52,4 @@ func init() {
 	message.SetString(language.Azerbaijani, invalidJSON, "Yanlış JSON")
 	message.SetString(language.Azerbaijani, fieldRequired, "Doldurmaq üçün tələb olunur")
 	message.SetString(language.Azerbaijani, typeMismatch, "Gözlənilən dəyər növü:% s")
-
-	SetLanguage("en")
 }

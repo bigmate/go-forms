@@ -7,7 +7,7 @@ import (
 
 const errorField = "error"
 
-type Message interface {
+type Result interface {
 	Ok() bool
 	String() string
 	Serialize() []byte

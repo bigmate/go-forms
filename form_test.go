@@ -6,13 +6,6 @@ import (
 	"testing"
 )
 
-var userForm = New(
-	CharField("name", true, 3, 10),
-	NumberField("age", true, 18, 55),
-	BoolField("married", true),
-	ChoiceField("country", false, []interface{}{1.0, 2.0, 3.0, 4.0, 5.0}),
-)
-
 func Test_form_IsValid(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1000)
@@ -23,9 +16,15 @@ func Test_form_IsValid(t *testing.T) {
 				return
 			}
 			req.Header.Set(headerContentType, mimeApplicationForm)
-			var ve = userForm.Validate(req)
-			if !ve.Ok() {
-				t.Error(ve)
+			var form = New(
+				CharField("name", true, 3, 10),
+				NumberField("age", true, 18, 55),
+				BoolField("married", true),
+				ChoiceField("country", false, []interface{}{1.0, 2.0, 3.0, 4.0, 5.0}),
+			)
+			var result = form.Validate(req)
+			if !result.Ok() {
+				t.Error(result)
 			}
 			wg.Done()
 		}("FIRST", "name=bekmamat&age=25&married=false")
@@ -38,9 +37,15 @@ func Test_form_IsValid(t *testing.T) {
 				return
 			}
 			req.Header.Set(headerContentType, mimeApplicationForm)
-			var ve = userForm.Validate(req)
-			if ve.Ok() {
-				t.Error(ve)
+			var form = New(
+				CharField("name", true, 3, 10),
+				NumberField("age", true, 18, 55),
+				BoolField("married", true),
+				ChoiceField("country", false, []interface{}{1.0, 2.0, 3.0, 4.0, 5.0}),
+			)
+			var result = form.Validate(req)
+			if result.Ok() {
+				t.Error(result)
 			}
 			wg.Done()
 		}("SECOND", "name=be&age=17&married=false")

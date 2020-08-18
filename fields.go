@@ -11,17 +11,21 @@ const (
 	char ftype = 1 << iota
 	number
 	boolean
+	datetime
 	array
 	charOrNumber = char | number
 )
 
 var table = map[ftype]string{
 	char:         "String",
+	datetime:     "Datetime",
 	number:       "Number",
 	boolean:      "Boolean",
 	array:        "Array",
 	charOrNumber: "String or Number",
 }
+
+var layouts = []string{time.RFC3339, time.RFC822, time.RubyDate}
 
 func (ft ftype) String() string {
 	return table[ft]
@@ -31,13 +35,32 @@ type Field interface {
 	Name() string
 	Validate(val interface{}) []string
 	Convert(val interface{}) interface{}
+	Value() interface{}
 }
 
 type field struct {
 	name     string
 	required bool
 	ftype    ftype
+	value    interface{}
 	vs       []Validator
+}
+
+func (f *field) toTime(val interface{}) interface{} {
+	var s, ok = val.(string)
+	if !ok {
+		return val
+	}
+	for _, layout := range layouts {
+		if t, err := time.Parse(layout, s); err == nil {
+			return t
+		}
+	}
+	return val
+}
+
+func (f *field) Value() interface{} {
+	return f.value
 }
 
 func (f *field) Convert(val interface{}) interface{} {
@@ -55,6 +78,8 @@ func (f *field) Convert(val interface{}) interface{} {
 				return val
 			}
 			return converted
+		case datetime:
+			return f.toTime(val)
 		}
 	}
 	return val
@@ -69,7 +94,7 @@ func (f *field) typeMatch(val interface{}) bool {
 	case float64:
 		return f.ftype == number || f.ftype == charOrNumber
 	case string:
-		return f.ftype == char || f.ftype == charOrNumber
+		return f.ftype == char || f.ftype == charOrNumber || f.ftype == datetime
 	case bool:
 		return f.ftype == boolean
 	case []interface{}:
@@ -98,6 +123,9 @@ func (f *field) Validate(val interface{}) []string {
 			errors = append(errors, err.Error())
 		}
 	}
+	if len(errors) == 0 {
+		f.value = val
+	}
 	return errors
 }
 
@@ -119,7 +147,6 @@ func CharField(name string, required bool, minLen, maxLen int, vs ...Validator) 
 }
 
 func DateTimeField(name string, required bool, vs ...Validator) Field {
-	var layouts = []string{time.RFC3339, time.RFC822, time.RubyDate}
 	var validator = func(val interface{}) error {
 		for _, layout := range layouts {
 			if _, err := time.Parse(layout, val.(string)); err == nil {
@@ -131,7 +158,7 @@ func DateTimeField(name string, required bool, vs ...Validator) Field {
 	var f = &field{
 		name:     name,
 		required: required,
-		ftype:    char,
+		ftype:    datetime,
 		vs:       []Validator{validator},
 	}
 	f.vs = append(f.vs, vs...)

@@ -94,11 +94,13 @@ func (f *field) typeMatch(val interface{}) bool {
 	case float64:
 		return f.ftype == number || f.ftype == charOrNumber
 	case string:
-		return f.ftype == char || f.ftype == charOrNumber || f.ftype == datetime
+		return f.ftype == char || f.ftype == charOrNumber
 	case bool:
 		return f.ftype == boolean
 	case []interface{}:
 		return f.ftype == array
+	case time.Time:
+		return f.ftype == datetime
 	default:
 		return false
 	}
@@ -148,6 +150,9 @@ func CharField(name string, required bool, minLen, maxLen int, vs ...Validator) 
 
 func DateTimeField(name string, required bool, vs ...Validator) Field {
 	var validator = func(val interface{}) error {
+		if _, ok := val.(time.Time); ok {
+			return nil
+		}
 		for _, layout := range layouts {
 			if _, err := time.Parse(layout, val.(string)); err == nil {
 				return nil

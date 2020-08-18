@@ -52,9 +52,11 @@ func (f *form) bind(val reflect.Value, typ reflect.Type) error {
 		}
 		var strField = val.Field(i)
 		var fv = reflect.ValueOf(field.Value())
-		fmt.Println(strField, fv)
+		if !fv.IsValid() {
+			continue
+		}
 		if !(strField.CanSet() && fv.Type().AssignableTo(strField.Type())) {
-			return fmt.Errorf("unexported field: %s", fieldType.Name)
+			return fmt.Errorf("imposible to assign to field %s", fieldType.Name)
 		}
 		strField.Set(fv)
 	}
@@ -91,14 +93,14 @@ func (f *form) validateJSON(rc io.Reader) {
 		return
 	}
 	for _, field := range f.fields {
-		f.errs.addBulk(field.Name(), field.Validate(field.Convert(dest[field.Name()])))
+		f.errs.addBulk(field.Name(), field.Validate(dest[field.Name()]))
 	}
 }
 
 func (f *form) validateForm(v url.Values) {
 	for _, field := range f.fields {
 		if _, ok := v[field.Name()]; ok {
-			f.errs.addBulk(field.Name(), field.Validate(field.Convert(v.Get(field.Name()))))
+			f.errs.addBulk(field.Name(), field.Validate(v.Get(field.Name())))
 		} else {
 			f.errs.addBulk(field.Name(), field.Validate(nil))
 		}

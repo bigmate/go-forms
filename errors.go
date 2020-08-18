@@ -2,10 +2,13 @@ package forms
 
 import (
 	"bytes"
+	"fmt"
 	"strconv"
 )
 
 const errorField = "error"
+
+var conversionError = fmt.Errorf("conversion error")
 
 type Result interface {
 	Ok() bool

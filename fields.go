@@ -1,6 +1,9 @@
 package forms
 
-import "strconv"
+import (
+	"strconv"
+	"time"
+)
 
 type ftype int
 
@@ -104,6 +107,26 @@ func CharField(name string, required bool, minLen, maxLen int, vs ...Validator) 
 			return T("length should be between %v and %v", minLen, maxLen)
 		}
 		return nil
+	}
+	var f = &field{
+		name:     name,
+		required: required,
+		ftype:    char,
+		vs:       []Validator{validator},
+	}
+	f.vs = append(f.vs, vs...)
+	return f
+}
+
+func DateTimeField(name string, required bool, vs ...Validator) Field {
+	var layouts = []string{time.RFC3339, time.RFC822, time.RubyDate}
+	var validator = func(val interface{}) error {
+		for _, layout := range layouts {
+			if _, err := time.Parse(layout, val.(string)); err == nil {
+				return nil
+			}
+		}
+		return T("Invalid datetime format")
 	}
 	var f = &field{
 		name:     name,

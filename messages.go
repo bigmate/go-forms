@@ -28,7 +28,6 @@ func SetLanguage(lang string) {
 }
 
 func init() {
-
 	message.SetString(language.English, invalidForm, invalidForm)
 	message.SetString(language.English, unsupportedContent, unsupportedContent)
 	message.SetString(language.English, invalidJSON, invalidJSON)

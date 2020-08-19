@@ -10,14 +10,12 @@ func (f *boolField) Assign(val interface{}) error {
 	switch val.(type) {
 	case bool:
 		f.value = val
-		return nil
 	case string:
 		var v, err = strconv.ParseBool(val.(string))
 		if err != nil {
-			return conversionError
+			return typeMismatchError
 		}
 		f.value = v
-		return nil
 	case float64:
 		var v = val.(float64)
 		if v <= 0 {
@@ -25,9 +23,10 @@ func (f *boolField) Assign(val interface{}) error {
 		} else {
 			f.value = true
 		}
-		return nil
+	default:
+		return typeMismatchError
 	}
-	return conversionError
+	return nil
 }
 
 func (f *boolField) Validate(val interface{}) []string {

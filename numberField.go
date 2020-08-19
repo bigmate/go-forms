@@ -13,15 +13,15 @@ func (f *numberField) Assign(val interface{}) error {
 	case string:
 		var converted, err = strconv.ParseFloat(val.(string), 64)
 		if err != nil {
-			return err
+			return typeMismatchError
 		}
 		f.value = converted
-		return nil
 	case float64:
 		f.value = val
-		return nil
+	default:
+		return typeMismatchError
 	}
-	return conversionError
+	return nil
 }
 
 func (f *numberField) Validate(val interface{}) []string {

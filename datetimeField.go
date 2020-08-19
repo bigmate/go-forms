@@ -12,23 +12,23 @@ func (f *datetimeField) Assign(val interface{}) error {
 		var v = val.(string)
 		if v == "now" {
 			f.value = time.Now()
-			return nil
+		} else {
+			var t, err = time.Parse(time.RFC3339, v)
+			if err != nil {
+				return typeMismatchError
+			}
+			f.value = t
 		}
-		var t, err = time.Parse(time.RFC3339, v)
-		if err != nil {
-			return conversionError
-		}
-		f.value = t
-		return nil
 	case float64:
 		var v = val.(float64)
 		if v <= 0 {
-			return conversionError
+			return typeMismatchError
 		}
 		f.value = time.Unix(int64(v), 0)
-		return nil
+	default:
+		return typeMismatchError
 	}
-	return conversionError
+	return nil
 }
 
 func (f *datetimeField) Validate(val interface{}) []string {
@@ -47,7 +47,7 @@ func (f *datetimeField) Validate(val interface{}) []string {
 }
 
 func DateTimeField(name string, required bool, vs ...Validator) Field {
-	var f = &datetimeField{
+	return &datetimeField{
 		field{
 			name:     name,
 			required: required,
@@ -55,5 +55,4 @@ func DateTimeField(name string, required bool, vs ...Validator) Field {
 			vs:       vs,
 		},
 	}
-	return f
 }

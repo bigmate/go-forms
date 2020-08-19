@@ -25,7 +25,7 @@ func (f *choiceField) Assign(val interface{}) error {
 		f.value = val
 		return nil
 	}
-	return conversionError
+	return typeMismatchError
 }
 
 func ChoiceField(name string, required bool, choices []interface{}, vs ...Validator) Field {

@@ -6,7 +6,7 @@ type charField struct {
 
 func (f *charField) Assign(val interface{}) error {
 	if _, ok := val.(string); !ok {
-		return conversionError
+		return typeMismatchError
 	}
 	f.value = val
 	return nil

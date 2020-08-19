@@ -1,6 +1,7 @@
 package forms
 
 import (
+	"errors"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -13,18 +14,13 @@ const (
 	typeMismatch       = "Expected value type: %s"
 )
 
-var pt = message.NewPrinter(language.English)
-
 func t(msg string, args ...interface{}) string {
+	var pt = message.NewPrinter(language.English)
 	return pt.Sprintf(msg, args...)
 }
 
 func T(msg string, args ...interface{}) error {
-	return newError(t(msg, args...))
-}
-
-func SetLanguage(lang string) {
-	pt = message.NewPrinter(message.MatchLanguage(lang))
+	return errors.New(t(msg, args...))
 }
 
 func init() {

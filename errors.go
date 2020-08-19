@@ -82,15 +82,3 @@ func (e errs) addBulk(field string, messages []string) {
 func (e errs) empty() bool {
 	return len(e) == 0
 }
-
-type validationError struct {
-	msg string
-}
-
-func newError(msg string) error {
-	return &validationError{msg: msg}
-}
-
-func (v *validationError) Error() string {
-	return v.msg
-}

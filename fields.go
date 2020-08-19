@@ -1,29 +1,5 @@
 package forms
 
-type ftype int
-
-const (
-	char ftype = 1 << iota
-	number
-	boolean
-	datetime
-	array
-	charOrNumber = char | number
-)
-
-var table = map[ftype]string{
-	char:         "String",
-	datetime:     "Datetime",
-	number:       "Number",
-	boolean:      "Boolean",
-	array:        "Array",
-	charOrNumber: "String or Number",
-}
-
-func (ft ftype) String() string {
-	return table[ft]
-}
-
 type Field interface {
 	Name() string
 	Value() interface{}

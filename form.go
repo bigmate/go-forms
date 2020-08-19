@@ -43,20 +43,20 @@ func (f *form) Bind(s interface{}) error {
 	return f.bind(val, typ)
 }
 
-func (f *form) bind(val reflect.Value, typ reflect.Type) error {
-	for i := 0; i < val.NumField(); i++ {
-		var fieldType = typ.Elem().Field(i)
-		var field, ok = f.fields[fieldType.Tag.Get("form")]
+func (f *form) bind(str reflect.Value, strType reflect.Type) error {
+	for i := 0; i < str.NumField(); i++ {
+		var fType = strType.Elem().Field(i)
+		var field, ok = f.fields[fType.Tag.Get("form")]
 		if !ok {
 			continue
 		}
-		var strField = val.Field(i)
+		var strField = str.Field(i)
 		var fv = reflect.ValueOf(field.Value())
 		if !fv.IsValid() {
 			continue
 		}
 		if !(strField.CanSet() && fv.Type().AssignableTo(strField.Type())) {
-			return fmt.Errorf("imposible to assign to field %s", fieldType.Name)
+			return fmt.Errorf("imposible to assign to field %s", fType.Name)
 		}
 		strField.Set(fv)
 	}

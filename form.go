@@ -2,7 +2,7 @@ package forms
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -22,7 +22,7 @@ type Form interface {
 }
 
 func New(fields ...Field) Form {
-	var form = &form{make(map[string]Field), make(errors)}
+	var form = &form{make(map[string]Field), make(errs)}
 	for _, f := range fields {
 		form.fields[f.Name()] = f
 	}
@@ -31,14 +31,14 @@ func New(fields ...Field) Form {
 
 type form struct {
 	fields map[string]Field
-	errs   errors
+	errs   errs
 }
 
 func (f *form) Bind(s interface{}) error {
 	var typ = reflect.TypeOf(s)
 	var val = reflect.ValueOf(s).Elem()
 	if typ.Kind() != reflect.Ptr || typ.Elem().Kind() != reflect.Struct {
-		return fmt.Errorf("pass pointer to struct")
+		return errors.New("pass pointer to struct")
 	}
 	return f.bind(val, typ)
 }
@@ -56,7 +56,7 @@ func (f *form) bind(str reflect.Value, strType reflect.Type) error {
 			continue
 		}
 		if !(strField.CanSet() && fv.Type().AssignableTo(strField.Type())) {
-			return fmt.Errorf("imposible to assign to field %s", fType.Name)
+			return errors.New("impossible to assign to field " + fType.Name)
 		}
 		strField.Set(fv)
 	}

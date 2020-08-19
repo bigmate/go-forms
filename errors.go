@@ -2,13 +2,13 @@ package forms
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"strconv"
 )
 
 const errorField = "error"
 
-var typeMismatchError = fmt.Errorf("conversion error")
+var typeMismatchError = errors.New("conversion error")
 
 type Result interface {
 	Ok() bool
@@ -17,21 +17,21 @@ type Result interface {
 	MarshalJSON() ([]byte, error)
 }
 
-type errors map[string][]string
+type errs map[string][]string
 
-func (e errors) Ok() bool {
+func (e errs) Ok() bool {
 	return e.empty()
 }
 
-func (e errors) String() string {
+func (e errs) String() string {
 	return string(e.Serialize())
 }
 
-func (e errors) MarshalJSON() ([]byte, error) {
+func (e errs) MarshalJSON() ([]byte, error) {
 	return e.Serialize(), nil
 }
 
-func (e errors) Serialize() []byte {
+func (e errs) Serialize() []byte {
 	var counter int
 	var buff bytes.Buffer
 	buff.WriteString("{")
@@ -55,12 +55,12 @@ func (e errors) Serialize() []byte {
 	return buff.Bytes()
 }
 
-func (e errors) has(field string) bool {
+func (e errs) has(field string) bool {
 	var _, ok = e[field]
 	return ok
 }
 
-func (e errors) add(field, message string) {
+func (e errs) add(field, message string) {
 	if e.has(field) {
 		e[field] = append(e[field], message)
 	} else {
@@ -68,7 +68,7 @@ func (e errors) add(field, message string) {
 	}
 }
 
-func (e errors) addBulk(field string, messages []string) {
+func (e errs) addBulk(field string, messages []string) {
 	if len(messages) == 0 {
 		return
 	}
@@ -79,7 +79,7 @@ func (e errors) addBulk(field string, messages []string) {
 	}
 }
 
-func (e errors) empty() bool {
+func (e errs) empty() bool {
 	return len(e) == 0
 }
 

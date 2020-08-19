@@ -8,13 +8,13 @@ import (
 func Test_errors_MarshalJSON(t *testing.T) {
 	tests := []struct {
 		name    string
-		e       errors
+		e       errs
 		want    []byte
 		wantErr bool
 	}{
 		{
 			name: "Valid",
-			e: errors{
+			e: errs{
 				"A": []string{"B", "C", "D"},
 			},
 			want:    []byte(`{"A":["B","C","D"]}`),
@@ -22,7 +22,7 @@ func Test_errors_MarshalJSON(t *testing.T) {
 		},
 		{
 			name: "Invalid",
-			e: errors{
+			e: errs{
 				"A": []string{"B", "C", "D"},
 			},
 			want:    []byte(`{"A":["B","C","D"]}`),
@@ -46,12 +46,12 @@ func Test_errors_MarshalJSON(t *testing.T) {
 func Test_errors_String(t *testing.T) {
 	tests := []struct {
 		name string
-		e    errors
+		e    errs
 		want string
 	}{
 		{
 			name: "First",
-			e: errors{
+			e: errs{
 				"A": []string{"B", "C", "D"},
 			},
 			want: `{"A":["B","C","D"]}`,

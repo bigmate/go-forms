@@ -38,6 +38,7 @@ func (f *datetimeField) Validate(val interface{}) []string {
 	}
 	if f.required && val == nil {
 		errors = append(errors, t(fieldRequired))
+		return errors
 	}
 	if f.Assign(val) != nil {
 		errors = append(errors, t(typeMismatch, f.ftype))

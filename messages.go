@@ -2,6 +2,7 @@ package forms
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
@@ -15,8 +16,7 @@ const (
 )
 
 func t(msg string, args ...interface{}) string {
-	var pt = message.NewPrinter(language.English)
-	return pt.Sprintf(msg, args...)
+	return fmt.Sprintf(msg, args)
 }
 
 func T(msg string, args ...interface{}) error {

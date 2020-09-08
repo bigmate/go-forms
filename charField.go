@@ -30,23 +30,15 @@ func (f *charField) Validate(val interface{}) []string {
 	return f.runValidators(errors)
 }
 
-func CharField(name string, required bool, minLen, maxLen int, vs ...Validator) Field {
-	var validator = func(val interface{}) error {
-		if s := val.(string); len(s) < minLen || len(s) > maxLen {
-			return T("length should be between %v and %v", minLen, maxLen)
-		}
-		return nil
-	}
-	var f = &charField{
+func CharField(name string, required bool, vs ...Validator) Field {
+	return &charField{
 		field{
 			name:     name,
 			required: required,
 			ftype:    "String",
-			vs:       []Validator{validator},
+			vs:       vs,
 		},
 	}
-	f.vs = append(f.vs, vs...)
-	return f
 }
 
 var emailRE = regexp.MustCompile("^\\S{4,20}@\\S{2,15}\\.\\S{2,6}$")

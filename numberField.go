@@ -40,21 +40,13 @@ func (f *numberField) Validate(val interface{}) []string {
 	return f.runValidators(errors)
 }
 
-func NumberField(name string, required bool, min, max float64, vs ...Validator) Field {
-	var validator = func(val interface{}) error {
-		if v := val.(float64); v < min || v > max {
-			return T("value should be between %v and %v", min, max)
-		}
-		return nil
-	}
-	var f = &numberField{
+func NumberField(name string, required bool, vs ...Validator) Field {
+	return &numberField{
 		field{
 			name:     name,
 			required: required,
 			ftype:    "Number",
-			vs:       []Validator{validator},
+			vs:       vs,
 		},
 	}
-	f.vs = append(f.vs, vs...)
-	return f
 }

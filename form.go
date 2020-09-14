@@ -1,6 +1,7 @@
 package forms
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -18,6 +19,7 @@ const (
 
 type Form interface {
 	Validate(r *http.Request) Result
+	MarshalJSON() ([]byte, error)
 	Bind(s interface{}) error
 }
 
@@ -105,4 +107,27 @@ func (f *form) validateForm(v url.Values) {
 			f.errs.addBulk(field.Name(), field.Validate(nil))
 		}
 	}
+}
+
+func (f *form) MarshalJSON() ([]byte, error) {
+	var buff bytes.Buffer
+	var i int
+	buff.WriteByte('{')
+	for _, field := range f.fields {
+		buff.WriteByte('"')
+		buff.WriteString(field.Name())
+		buff.WriteByte('"')
+		buff.WriteByte(':')
+		var bs, err = json.Marshal(field.Value())
+		if err != nil {
+			return nil, err
+		}
+		buff.Write(bs)
+		if i < len(f.fields)-1 {
+			buff.WriteByte(',')
+		}
+		i++
+	}
+	buff.WriteByte('}')
+	return buff.Bytes(), nil
 }

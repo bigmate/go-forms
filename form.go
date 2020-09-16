@@ -90,6 +90,7 @@ func (f *form) Validate(r *http.Request) Result {
 	default:
 		f.errs.add(errorField, t(unsupportedContent))
 	}
+	f.runFormValidators()
 	return f.errs
 }
 

@@ -19,6 +19,7 @@ type Result interface {
 
 type Messenger interface {
 	Add(field, message string)
+	Has(field string) bool
 }
 
 type errs map[string][]string
@@ -57,6 +58,10 @@ func (e errs) Serialize() []byte {
 	}
 	buff.WriteString("}")
 	return buff.Bytes()
+}
+
+func (e errs) Has(field string) bool {
+	return e.has(field)
 }
 
 func (e errs) has(field string) bool {

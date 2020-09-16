@@ -27,3 +27,12 @@ func (f *arrayField) Validate(val interface{}) []string {
 	}
 	return f.runValidators(errors)
 }
+
+func ArrayField(name string, required bool, vs ...Validator) Field {
+	return &arrayField{field{
+		name:     name,
+		required: required,
+		ftype:    "Array",
+		vs:       vs,
+	}}
+}

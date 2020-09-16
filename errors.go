@@ -8,13 +8,17 @@ import (
 
 const errorField = "error"
 
-var typeMismatchError = errors.New("conversion error")
+var typeMismatchError = errors.New("types mismatch")
 
 type Result interface {
 	Ok() bool
 	String() string
 	Serialize() []byte
 	MarshalJSON() ([]byte, error)
+}
+
+type Messenger interface {
+	Add(field, message string)
 }
 
 type errs map[string][]string
@@ -58,6 +62,10 @@ func (e errs) Serialize() []byte {
 func (e errs) has(field string) bool {
 	var _, ok = e[field]
 	return ok
+}
+
+func (e errs) Add(field, message string) {
+	e.add(field, message)
 }
 
 func (e errs) add(field, message string) {

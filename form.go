@@ -21,10 +21,15 @@ type Form interface {
 	Validate(r *http.Request) Result
 	MarshalJSON() ([]byte, error)
 	Bind(s interface{}) error
+	BindValidators(validator ...FormValidator) Form
 }
 
 func New(fields ...Field) Form {
-	var form = &form{make(map[string]Field), make(errs)}
+	var form = &form{
+		fields:     make(map[string]Field),
+		validators: make([]FormValidator, 0),
+		errs:       make(errs),
+	}
 	for _, f := range fields {
 		form.fields[f.Name()] = f
 	}
@@ -32,8 +37,9 @@ func New(fields ...Field) Form {
 }
 
 type form struct {
-	fields map[string]Field
-	errs   errs
+	fields     map[string]Field
+	validators []FormValidator
+	errs       errs
 }
 
 func (f *form) Bind(s interface{}) error {
@@ -130,4 +136,15 @@ func (f *form) MarshalJSON() ([]byte, error) {
 	}
 	buff.WriteByte('}')
 	return buff.Bytes(), nil
+}
+
+func (f *form) BindValidators(validators ...FormValidator) Form {
+	f.validators = append(f.validators, validators...)
+	return f
+}
+
+func (f *form) runFormValidators() {
+	for _, formValidator := range f.validators {
+		formValidator(f.errs, f.fields)
+	}
 }

@@ -55,3 +55,5 @@ func NumWithin(l, h float64) Validator {
 		return nil
 	}
 }
+
+type FormValidator func(messenger Messenger, fields map[string]Field)

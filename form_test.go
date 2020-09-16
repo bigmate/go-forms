@@ -9,7 +9,7 @@ import (
 func Test_form_IsValid(t *testing.T) {
 	var form = New(
 		CharField("name", true, Within(5, 20)),
-		NumberField("pets", false, 0, 20),
+		NumberField("pets", false),
 		DateTimeField("dateofbirth", true),
 		ChoiceField("language", true, []interface{}{"KG", "EN", "RU", "TR"}),
 		BoolField("married", false),

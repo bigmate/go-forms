@@ -19,9 +19,12 @@ const (
 
 type Form interface {
 	Validate(r *http.Request) Result
+	BindValidators(validator ...FormValidator) Form
+
+	// Available after validation
 	MarshalJSON() ([]byte, error)
 	Bind(s interface{}) error
-	BindValidators(validator ...FormValidator) Form
+	Fields() ([]string, []interface{})
 }
 
 func New(fields ...Field) Form {
@@ -148,4 +151,16 @@ func (f *form) runFormValidators() {
 	for _, formValidator := range f.validators {
 		formValidator(f.errs, f.fields)
 	}
+}
+
+func (f *form) Fields() ([]string, []interface{}) {
+	var fields = make([]string, 0)
+	var values = make([]interface{}, 0)
+	for name, field := range f.fields {
+		if field.Value() != nil {
+			fields = append(fields, name)
+			values = append(values, field.Value())
+		}
+	}
+	return fields, values
 }

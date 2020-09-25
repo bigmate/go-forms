@@ -105,5 +105,6 @@ func DurationField(name string, required bool, vs ...Validator) Field {
 			ftype:    "Number",
 			vs:       vs,
 		},
+		nil,
 	}
 }

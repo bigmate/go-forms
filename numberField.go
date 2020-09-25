@@ -1,26 +1,16 @@
 package forms
 
-import (
-	"strconv"
-)
-
 type numberField struct {
 	field
+	converter Converter
 }
 
 func (f *numberField) Assign(val interface{}) error {
-	switch val.(type) {
-	case string:
-		var converted, err = strconv.ParseFloat(val.(string), 64)
-		if err != nil {
-			return typeMismatchError
-		}
-		f.value = converted
-	case float64:
-		f.value = val
-	default:
-		return typeMismatchError
+	var converted, err = f.converter(val)
+	if err != nil {
+		return err
 	}
+	f.value = converted
 	return nil
 }
 
@@ -40,7 +30,7 @@ func (f *numberField) Validate(val interface{}) []string {
 	return f.runValidators(errors)
 }
 
-func NumberField(name string, required bool, vs ...Validator) Field {
+func NumberField(name string, required bool, c Converter, vs ...Validator) Field {
 	return &numberField{
 		field{
 			name:     name,
@@ -48,5 +38,6 @@ func NumberField(name string, required bool, vs ...Validator) Field {
 			ftype:    "Number",
 			vs:       vs,
 		},
+		c,
 	}
 }

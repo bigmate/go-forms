@@ -41,7 +41,7 @@ func NumMin(v float64) Validator {
 			err = value < v
 		case time.Duration:
 			err = float64(value) < v
-		case int:
+		case int64:
 			err = float64(value) < v
 		default:
 			return T("expected numeric value")
@@ -61,7 +61,7 @@ func NumMax(v float64) Validator {
 			err = value > v
 		case time.Duration:
 			err = float64(value) > v
-		case int:
+		case int64:
 			err = float64(value) > v
 		default:
 			return T("expected numeric value")
@@ -81,7 +81,7 @@ func NumWithin(l, h float64) Validator {
 			err = value < l || value > h
 		case time.Duration:
 			err = float64(value) < l || float64(value) > h
-		case int:
+		case int64:
 			err = float64(value) < l || float64(value) > h
 		default:
 			return T("expected numeric value")

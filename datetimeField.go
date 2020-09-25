@@ -98,7 +98,7 @@ func (f *durationField) Validate(val interface{}) []string {
 }
 
 func DurationField(name string, required bool, vs ...Validator) Field {
-	return &numberField{
+	return &durationField{
 		field{
 			name:     name,
 			required: required,

@@ -24,7 +24,7 @@ type Form interface {
 	// Available after validation
 	MarshalJSON() ([]byte, error)
 	Bind(s interface{}) error
-	Fields() ([]string, []interface{})
+	Fields() []Field
 }
 
 func New(fields ...Field) Form {
@@ -40,9 +40,10 @@ func New(fields ...Field) Form {
 }
 
 type form struct {
-	fields     map[string]Field
-	validators []FormValidator
-	errs       errs
+	fields       map[string]Field
+	validators   []FormValidator
+	errs         errs
+	cachedFields []Field
 }
 
 func (f *form) Bind(s interface{}) error {
@@ -153,14 +154,16 @@ func (f *form) runFormValidators() {
 	}
 }
 
-func (f *form) Fields() ([]string, []interface{}) {
-	var fields = make([]string, 0)
-	var values = make([]interface{}, 0)
-	for name, field := range f.fields {
+func (f *form) Fields() []Field {
+	if f.cachedFields != nil {
+		return f.cachedFields
+	}
+	var fields = make([]Field, 0)
+	for _, field := range f.fields {
 		if field.Value() != nil {
-			fields = append(fields, name)
-			values = append(values, field.Value())
+			fields = append(fields, field)
 		}
 	}
-	return fields, values
+	f.cachedFields = fields
+	return fields
 }

@@ -31,6 +31,7 @@ func (f *datetimeField) Assign(val interface{}) error {
 	default:
 		return typeMismatchError
 	}
+	f.bound = true
 	return nil
 }
 
@@ -78,6 +79,7 @@ func (f *durationField) Assign(val interface{}) error {
 	default:
 		return typeMismatchError
 	}
+	f.bound = true
 	return nil
 }
 

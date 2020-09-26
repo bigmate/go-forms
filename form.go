@@ -125,19 +125,21 @@ func (f *form) MarshalJSON() ([]byte, error) {
 	var i int
 	buff.WriteByte('{')
 	for _, field := range f.fields {
-		buff.WriteByte('"')
-		buff.WriteString(field.Name())
-		buff.WriteByte('"')
-		buff.WriteByte(':')
-		var bs, err = json.Marshal(field.Value())
-		if err != nil {
-			return nil, err
+		if field.Bound() {
+			if i > 0 {
+				buff.WriteByte(',')
+			}
+			i++
+			buff.WriteByte('"')
+			buff.WriteString(field.Name())
+			buff.WriteByte('"')
+			buff.WriteByte(':')
+			var bs, err = json.Marshal(field.Value())
+			if err != nil {
+				return nil, err
+			}
+			buff.Write(bs)
 		}
-		buff.Write(bs)
-		if i < len(f.fields)-1 {
-			buff.WriteByte(',')
-		}
-		i++
 	}
 	buff.WriteByte('}')
 	return buff.Bytes(), nil
@@ -160,7 +162,7 @@ func (f *form) Fields() []Field {
 	}
 	var fields = make([]Field, 0)
 	for _, field := range f.fields {
-		if field.Value() != nil {
+		if field.Bound() {
 			fields = append(fields, field)
 		}
 	}

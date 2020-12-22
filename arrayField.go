@@ -7,6 +7,7 @@ type arrayField struct {
 func (f *arrayField) Assign(val interface{}) error {
 	if value, ok := val.([]interface{}); ok {
 		f.value = value
+		f.bound = true
 		return nil
 	}
 	return typeMismatchError

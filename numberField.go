@@ -21,6 +21,7 @@ func (f *floatField) Assign(val interface{}) error {
 	default:
 		return typeMismatchError
 	}
+	f.bound = true
 	return nil
 }
 
@@ -64,10 +65,11 @@ func (f *numberField) Assign(val interface{}) error {
 		}
 		f.value = converted
 	case float64:
-		f.value = int(value)
+		f.value = int64(value)
 	default:
 		return typeMismatchError
 	}
+	f.bound = true
 	return nil
 }
 

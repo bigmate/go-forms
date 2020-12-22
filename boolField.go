@@ -26,6 +26,7 @@ func (f *boolField) Assign(val interface{}) error {
 	default:
 		return typeMismatchError
 	}
+	f.bound = true
 	return nil
 }
 

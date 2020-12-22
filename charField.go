@@ -11,6 +11,7 @@ func (f *charField) Assign(val interface{}) error {
 		return typeMismatchError
 	}
 	f.value = val
+	f.bound = true
 	return nil
 }
 

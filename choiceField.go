@@ -24,6 +24,7 @@ func (f *choiceField) Assign(val interface{}) error {
 	switch val.(type) {
 	case string, float64:
 		f.value = val
+		f.bound = true
 		return nil
 	}
 	return typeMismatchError

@@ -54,7 +54,7 @@ func Test_errors_String(t *testing.T) {
 			e: errs{
 				"A": []string{"B", "C", "D"},
 			},
-			want: `{"A":["B","C","D"]}`,
+			want: "B\nC\nD",
 		},
 	}
 	for _, tt := range tests {

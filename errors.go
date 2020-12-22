@@ -29,7 +29,15 @@ func (e errs) Ok() bool {
 }
 
 func (e errs) String() string {
-	return string(e.Serialize())
+	var buff bytes.Buffer
+	for _, messages := range e {
+		for i := 0; i < len(messages); i++ {
+			buff.WriteString(messages[i])
+			buff.WriteByte('\n')
+		}
+	}
+	buff.Truncate(buff.Len() - 1)
+	return buff.String()
 }
 
 func (e errs) MarshalJSON() ([]byte, error) {

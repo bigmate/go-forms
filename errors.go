@@ -36,7 +36,9 @@ func (e errs) String() string {
 			buff.WriteByte('\n')
 		}
 	}
-	buff.Truncate(buff.Len() - 1)
+	if buff.Len() > 0 {
+		buff.Truncate(buff.Len() - 1)
+	}
 	return buff.String()
 }
 

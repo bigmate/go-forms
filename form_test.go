@@ -1,6 +1,7 @@
 package forms
 
 import (
+	"bytes"
 	"net/http"
 	"strings"
 	"testing"
@@ -24,8 +25,8 @@ func Test_form_IsValid(t *testing.T) {
 	if res.Ok() {
 		t.Fatal("Expected error")
 	}
-	var exp = "{\"dateofbirth\":[\"Field is required\"],\"language\":[\"Field is required\"]}"
-	if res.String() != exp {
-		t.Errorf("Unexpected result: %s", res.String())
+	var exp = []byte(`{"dateofbirth":["Field is required"],"language":["Field is required"]}`)
+	if bytes.Compare(res.Serialize(), exp) != 0 {
+		t.Errorf("Unexpected result: %s", res.Serialize())
 	}
 }

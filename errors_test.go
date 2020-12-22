@@ -56,6 +56,14 @@ func Test_errors_String(t *testing.T) {
 			},
 			want: "B\nC\nD",
 		},
+		{
+			name: "Second",
+			e: errs{
+				"A": []string{},
+				"B": []string{},
+			},
+			want: "",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

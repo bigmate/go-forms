@@ -2,6 +2,8 @@ package forms
 
 import (
 	"strconv"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 type floatField struct {
@@ -25,20 +27,25 @@ func (f *floatField) Assign(val interface{}) error {
 	return nil
 }
 
-func (f *floatField) Validate(val interface{}) []string {
+func (f *floatField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	var errors = make([]string, 0)
 	if !f.required && val == nil {
 		return errors
 	}
 	if f.required && val == nil {
-		errors = append(errors, t(fieldRequired))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: fieldRequired,
+		}))
 		return errors
 	}
 	if f.Assign(val) != nil {
-		errors = append(errors, t(typeMismatch, f.ftype))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID:    typeMismatch,
+			TemplateData: f.ftype,
+		}))
 		return errors
 	}
-	return f.runValidators(errors)
+	return f.runValidators(lc, errors)
 }
 
 func FloatField(name string, required bool, vs ...Validator) Field {
@@ -73,20 +80,23 @@ func (f *numberField) Assign(val interface{}) error {
 	return nil
 }
 
-func (f *numberField) Validate(val interface{}) []string {
+func (f *numberField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	var errors = make([]string, 0)
 	if !f.required && val == nil {
 		return errors
 	}
 	if f.required && val == nil {
-		errors = append(errors, t(fieldRequired))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{MessageID: fieldRequired}))
 		return errors
 	}
 	if f.Assign(val) != nil {
-		errors = append(errors, t(typeMismatch, f.ftype))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID:    typeMismatch,
+			TemplateData: f.ftype,
+		}))
 		return errors
 	}
-	return f.runValidators(errors)
+	return f.runValidators(lc, errors)
 }
 
 func NumberField(name string, required bool, vs ...Validator) Field {

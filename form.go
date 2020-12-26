@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"reflect"
 	"strings"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 const (
@@ -77,6 +79,7 @@ func (f *form) bind(str reflect.Value, strType reflect.Type) error {
 
 func (f *form) Validate(r *http.Request) Result {
 	var err = r.ParseForm()
+	var lc = i18n.NewLocalizer(bundle, "en", "ru", r.Header.Get("Accept-Lang"))
 	if err != nil {
 		f.errs.add(errorField, t(invalidForm))
 		return f.errs

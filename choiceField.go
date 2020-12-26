@@ -4,20 +4,25 @@ type choiceField struct {
 	field
 }
 
-func (f *choiceField) Validate(val interface{}) []string {
+func (f *choiceField) Validate(lc *i18n.Localizer,val interface{}) []string {
 	var errors = make([]string, 0)
 	if !f.required && val == nil {
 		return errors
 	}
 	if f.required && val == nil {
-		errors = append(errors, t(fieldRequired))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: fieldRequired,
+		}))
 		return errors
 	}
 	if f.Assign(val) != nil {
-		errors = append(errors, t(typeMismatch, f.ftype))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID:    typeMismatch,
+			TemplateData: f.ftype,
+		}))
 		return errors
 	}
-	return f.runValidators(errors)
+	return f.runValidators(lc, errors)
 }
 
 func (f *choiceField) Assign(val interface{}) error {

@@ -1,9 +1,13 @@
 package forms
 
+import (
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+)
+
 type Field interface {
 	Name() string
 	Value() interface{}
-	Validate(val interface{}) []string
+	Validate(lc *i18n.Localizer, val interface{}) []string
 	Assign(val interface{}) error
 	Bound() bool
 }
@@ -29,12 +33,9 @@ func (f *field) Bound() bool {
 	return f.bound
 }
 
-func (f *field) runValidators(errors []string) []string {
+func (f *field) runValidators(lc *i18n.Localizer, errors []string) []string {
 	for _, validator := range f.vs {
-		var err = validator(f.value)
-		if err != nil {
-			errors = append(errors, err.Error())
-		}
+		validator(lc, f.value)
 	}
 	return errors
 }

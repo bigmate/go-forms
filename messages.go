@@ -1,11 +1,8 @@
 package forms
 
 import (
-	"errors"
-	"fmt"
-
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 )
 
 const (
@@ -13,39 +10,33 @@ const (
 	unsupportedContent = "Unsupported content"
 	invalidJSON        = "Invalid json"
 	fieldRequired      = "Field is required"
-	typeMismatch       = "Expected value type: %s"
+	typeMismatch       = "Expected value type: {{.type}}"
 )
 
-func t(msg string, args ...interface{}) string {
-	return fmt.Sprintf(msg, args...)
-}
-
-func T(msg string, args ...interface{}) error {
-	return errors.New(t(msg, args...))
-}
+var bundle = i18n.NewBundle(language.English)
 
 func init() {
-	message.SetString(language.English, invalidForm, invalidForm)
-	message.SetString(language.English, unsupportedContent, unsupportedContent)
-	message.SetString(language.English, invalidJSON, invalidJSON)
-	message.SetString(language.English, fieldRequired, fieldRequired)
-	message.SetString(language.English, typeMismatch, typeMismatch)
+	bundle.MustAddMessages(language.English, &i18n.Message{ID: invalidForm, Other: invalidForm})
+	bundle.MustAddMessages(language.English, &i18n.Message{ID: unsupportedContent, Other: unsupportedContent})
+	bundle.MustAddMessages(language.English, &i18n.Message{ID: invalidJSON, Other: invalidJSON})
+	bundle.MustAddMessages(language.English, &i18n.Message{ID: fieldRequired, Other: fieldRequired})
+	bundle.MustAddMessages(language.English, &i18n.Message{ID: typeMismatch, Other: typeMismatch})
 
-	message.SetString(language.Kirghiz, invalidForm, "Форма туура эмес")
-	message.SetString(language.Kirghiz, unsupportedContent, "Колдоого алынбаган контент")
-	message.SetString(language.Kirghiz, invalidJSON, "Жараксыз JSON")
-	message.SetString(language.Kirghiz, fieldRequired, "Талаа толтурулушу керек")
-	message.SetString(language.Kirghiz, typeMismatch, "Күтүлүүчү маани түрү: %s")
+	bundle.MustAddMessages(language.Kirghiz, &i18n.Message{ID: invalidForm, Other: "Форма туура эмес"})
+	bundle.MustAddMessages(language.Kirghiz, &i18n.Message{ID: unsupportedContent, Other: "Колдоого алынбаган контент"})
+	bundle.MustAddMessages(language.Kirghiz, &i18n.Message{ID: invalidJSON, Other: "Жараксыз JSON"})
+	bundle.MustAddMessages(language.Kirghiz, &i18n.Message{ID: fieldRequired, Other: "Талаа толтурулушу керек"})
+	bundle.MustAddMessages(language.Kirghiz, &i18n.Message{ID: typeMismatch, Other: "Күтүлүүчү маани түрү: {{.type}}"})
 
-	message.SetString(language.Russian, invalidForm, "Неверная форма")
-	message.SetString(language.Russian, unsupportedContent, "Неподдерживаемый контент")
-	message.SetString(language.Russian, invalidJSON, "Неверный JSON")
-	message.SetString(language.Russian, fieldRequired, "Обязательно к заполнению")
-	message.SetString(language.Russian, typeMismatch, "Ожидаемый тип значения: %s")
+	bundle.MustAddMessages(language.Russian, &i18n.Message{ID: invalidForm, Other: "Неверная форма"})
+	bundle.MustAddMessages(language.Russian, &i18n.Message{ID: unsupportedContent, Other: "Неподдерживаемый контент"})
+	bundle.MustAddMessages(language.Russian, &i18n.Message{ID: invalidJSON, Other: "Неверный JSON"})
+	bundle.MustAddMessages(language.Russian, &i18n.Message{ID: fieldRequired, Other: "Обязательно к заполнению"})
+	bundle.MustAddMessages(language.Russian, &i18n.Message{ID: typeMismatch, Other: "Ожидаемый тип значения: {{.type}}"})
 
-	message.SetString(language.Azerbaijani, invalidForm, "Yanlış forma")
-	message.SetString(language.Azerbaijani, unsupportedContent, "Dəstəklənməyən məzmun")
-	message.SetString(language.Azerbaijani, invalidJSON, "Yanlış JSON")
-	message.SetString(language.Azerbaijani, fieldRequired, "Doldurmaq üçün tələb olunur")
-	message.SetString(language.Azerbaijani, typeMismatch, "Gözlənilən dəyər növü:% s")
+	bundle.MustAddMessages(language.Azerbaijani, &i18n.Message{ID: invalidForm, Other: "Yanlış forma"})
+	bundle.MustAddMessages(language.Azerbaijani, &i18n.Message{ID: unsupportedContent, Other: "Dəstəklənməyən məzmun"})
+	bundle.MustAddMessages(language.Azerbaijani, &i18n.Message{ID: invalidJSON, Other: "Yanlış JSON"})
+	bundle.MustAddMessages(language.Azerbaijani, &i18n.Message{ID: fieldRequired, Other: "Doldurmaq üçün tələb olunur"})
+	bundle.MustAddMessages(language.Azerbaijani, &i18n.Message{ID: typeMismatch, Other: "Gözlənilən dəyər növü: {{.type}}"})
 }

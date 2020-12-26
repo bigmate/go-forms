@@ -1,6 +1,10 @@
 package forms
 
-import "regexp"
+import (
+	"regexp"
+
+	"github.com/nicksnyder/go-i18n/v2/i18n"
+)
 
 type charField struct {
 	field
@@ -15,20 +19,25 @@ func (f *charField) Assign(val interface{}) error {
 	return nil
 }
 
-func (f *charField) Validate(val interface{}) []string {
+func (f *charField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	var errors = make([]string, 0)
 	if !f.required && val == nil {
 		return errors
 	}
 	if f.required && val == nil {
-		errors = append(errors, t(fieldRequired))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: fieldRequired,
+		}))
 		return errors
 	}
 	if f.Assign(val) != nil {
-		errors = append(errors, t(typeMismatch, f.ftype))
+		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID:    typeMismatch,
+			TemplateData: f.ftype,
+		}))
 		return errors
 	}
-	return f.runValidators(errors)
+	return f.runValidators(lc, errors)
 }
 
 func CharField(name string, required bool, vs ...Validator) Field {
@@ -45,9 +54,12 @@ func CharField(name string, required bool, vs ...Validator) Field {
 var emailRE = regexp.MustCompile("^\\S{4,20}@\\S{2,15}\\.\\S{2,6}$")
 
 func EmailField(name string, required bool, vs ...Validator) Field {
-	var validator = func(val interface{}) error {
+	var validator = func(lc *i18n.Localizer, val interface{}) {
 		if !emailRE.Match([]byte(val.(string))) {
-			return T("invalid email")
+			lc.LocalizeMessage(&i18n.Message{
+				ID:    "invalid email",
+				Other: "invalid email",
+			})
 		}
 		return nil
 	}

@@ -21,6 +21,7 @@ func Test_form_IsValid(t *testing.T) {
 		t.Fatal(err)
 	}
 	req.Header.Set(headerContentType, mimeApplicationJSON)
+	req.Header.Set("Accept-Lang", "en")
 	var res = form.Validate(req)
 	if res.Ok() {
 		t.Fatal("Expected error")

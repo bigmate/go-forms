@@ -79,46 +79,52 @@ func (f *form) bind(str reflect.Value, strType reflect.Type) error {
 
 func (f *form) Validate(r *http.Request) Result {
 	var err = r.ParseForm()
-	var lc = i18n.NewLocalizer(bundle, "en", "ru", r.Header.Get("Accept-Lang"))
+	var lc = i18n.NewLocalizer(bundle, r.Header.Get("Accept-Lang"), "en")
 	if err != nil {
-		f.errs.add(errorField, t(invalidForm))
+		f.errs.add(errorField, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: invalidForm,
+		}))
 		return f.errs
 	}
 	if r.Method == http.MethodGet {
-		f.validateForm(r.Form)
+		f.validateForm(lc, r.Form)
 		return f.errs
 	}
 	var content = r.Header.Get(headerContentType)
 	switch {
 	case strings.HasPrefix(content, mimeApplicationJSON):
-		f.validateJSON(r.Body)
+		f.validateJSON(lc, r.Body)
 	case strings.HasPrefix(content, mimeApplicationForm):
-		f.validateForm(r.PostForm)
+		f.validateForm(lc, r.PostForm)
 	default:
-		f.errs.add(errorField, t(unsupportedContent))
+		f.errs.add(errorField, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: unsupportedContent,
+		}))
 	}
 	f.runFormValidators()
 	return f.errs
 }
 
-func (f *form) validateJSON(rc io.Reader) {
+func (f *form) validateJSON(lc *i18n.Localizer, rc io.Reader) {
 	var dest = make(map[string]interface{})
 	var err = json.NewDecoder(rc).Decode(&dest)
 	if err != nil {
-		f.errs.add(errorField, t(invalidJSON))
+		f.errs.add(errorField, lc.MustLocalize(&i18n.LocalizeConfig{
+			MessageID: invalidJSON,
+		}))
 		return
 	}
 	for _, field := range f.fields {
-		f.errs.addBulk(field.Name(), field.Validate(dest[field.Name()]))
+		f.errs.addBulk(field.Name(), field.Validate(lc, dest[field.Name()]))
 	}
 }
 
-func (f *form) validateForm(v url.Values) {
+func (f *form) validateForm(lc *i18n.Localizer,v url.Values) {
 	for _, field := range f.fields {
 		if _, ok := v[field.Name()]; ok {
-			f.errs.addBulk(field.Name(), field.Validate(v.Get(field.Name())))
+			f.errs.addBulk(field.Name(), field.Validate(lc, v.Get(field.Name())))
 		} else {
-			f.errs.addBulk(field.Name(), field.Validate(nil))
+			f.errs.addBulk(field.Name(), field.Validate(lc, nil))
 		}
 	}
 }

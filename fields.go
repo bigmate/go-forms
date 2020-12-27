@@ -35,7 +35,9 @@ func (f *field) Bound() bool {
 
 func (f *field) runValidators(lc *i18n.Localizer, errors []string) []string {
 	for _, validator := range f.vs {
-		validator(lc, f.value)
+		if err := validator(lc, f.value); err != nil {
+			errors = append(errors, err.Error())
+		}
 	}
 	return errors
 }

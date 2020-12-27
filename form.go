@@ -79,7 +79,7 @@ func (f *form) bind(str reflect.Value, strType reflect.Type) error {
 
 func (f *form) Validate(r *http.Request) Result {
 	var err = r.ParseForm()
-	var lc = i18n.NewLocalizer(bundle, r.Header.Get("Accept-Lang"), "en")
+	var lc = i18n.NewLocalizer(bundle, r.Header.Get("Accept-Language"), "en")
 	if err != nil {
 		f.errs.add(errorField, lc.MustLocalize(&i18n.LocalizeConfig{
 			MessageID: invalidForm,

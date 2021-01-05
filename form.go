@@ -33,7 +33,7 @@ func New(fields ...Field) Form {
 	var form = &form{
 		fields:     make(map[string]Field),
 		validators: make([]FormValidator, 0),
-		errs:       make(errs),
+		errs:       newErrs(),
 	}
 	for _, f := range fields {
 		form.fields[f.Name()] = f

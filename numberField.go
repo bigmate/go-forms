@@ -6,20 +6,37 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
+type FloatValidator func(lc *i18n.Localizer, val float64) error
+
 type floatField struct {
 	field
+	value float64
+	vs    []FloatValidator
 }
 
-func (f *floatField) Assign(val interface{}) error {
-	switch val.(type) {
+func (f *floatField) Value() interface{} {
+	return f.value
+}
+
+func (f *floatField) runValidators(lc *i18n.Localizer, errors []string) []string {
+	for _, validator := range f.vs {
+		if err := validator(lc, f.value); err != nil {
+			errors = append(errors, err.Error())
+		}
+	}
+	return errors
+}
+
+func (f *floatField) set(val interface{}) error {
+	switch value := val.(type) {
 	case string:
-		var converted, err = strconv.ParseFloat(val.(string), 64)
+		var converted, err = strconv.ParseFloat(value, 64)
 		if err != nil {
 			return typeMismatchError
 		}
 		f.value = converted
 	case float64:
-		f.value = val
+		f.value = value
 	default:
 		return typeMismatchError
 	}
@@ -38,7 +55,7 @@ func (f *floatField) Validate(lc *i18n.Localizer, val interface{}) []string {
 		}))
 		return errors
 	}
-	if f.Assign(val) != nil {
+	if f.set(val) != nil {
 		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
 			MessageID:    typeMismatch,
 			TemplateData: f.ftype,
@@ -48,22 +65,39 @@ func (f *floatField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	return f.runValidators(lc, errors)
 }
 
-func FloatField(name string, required bool, vs ...Validator) Field {
+func FloatField(name string, required bool, vs ...FloatValidator) Field {
 	return &floatField{
-		field{
+		field: field{
 			name:     name,
 			required: required,
 			ftype:    "Float",
-			vs:       vs,
 		},
+		vs: vs,
 	}
 }
 
+type NumValidator func(lc *i18n.Localizer, val int64) error
+
 type numberField struct {
 	field
+	value int64
+	vs    []NumValidator
 }
 
-func (f *numberField) Assign(val interface{}) error {
+func (f *numberField) Value() interface{} {
+	return f.value
+}
+
+func (f *numberField) runValidators(lc *i18n.Localizer, errors []string) []string {
+	for _, validator := range f.vs {
+		if err := validator(lc, f.value); err != nil {
+			errors = append(errors, err.Error())
+		}
+	}
+	return errors
+}
+
+func (f *numberField) set(val interface{}) error {
 	switch value := val.(type) {
 	case string:
 		var converted, err = strconv.ParseInt(value, 10, 64)
@@ -89,7 +123,7 @@ func (f *numberField) Validate(lc *i18n.Localizer, val interface{}) []string {
 		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{MessageID: fieldRequired}))
 		return errors
 	}
-	if f.Assign(val) != nil {
+	if f.set(val) != nil {
 		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
 			MessageID:    typeMismatch,
 			TemplateData: f.ftype,
@@ -99,13 +133,13 @@ func (f *numberField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	return f.runValidators(lc, errors)
 }
 
-func NumberField(name string, required bool, vs ...Validator) Field {
+func NumberField(name string, required bool, vs ...NumValidator) Field {
 	return &numberField{
-		field{
+		field: field{
 			name:     name,
 			required: required,
 			ftype:    "Number",
-			vs:       vs,
 		},
+		vs: vs,
 	}
 }

@@ -22,7 +22,17 @@ type Messenger interface {
 	Has(field string) bool
 }
 
-type errs map[string][]string
+type errs struct {
+	kv map[string][]string
+	ll *linkedList
+}
+
+func newErrs() errs {
+	return errs{
+		kv: make(map[string][]string),
+		ll: newLinkedList(),
+	}
+}
 
 func (e errs) Ok() bool {
 	return e.empty()
@@ -30,11 +40,14 @@ func (e errs) Ok() bool {
 
 func (e errs) String() string {
 	var buff bytes.Buffer
-	for _, messages := range e {
+	var node = e.ll.head
+	for node != nil {
+		var messages = e.kv[node.key]
 		for i := 0; i < len(messages); i++ {
 			buff.WriteString(messages[i])
 			buff.WriteByte('\n')
 		}
+		node = node.next
 	}
 	if buff.Len() > 0 {
 		buff.Truncate(buff.Len() - 1)
@@ -47,12 +60,13 @@ func (e errs) MarshalJSON() ([]byte, error) {
 }
 
 func (e errs) Serialize() []byte {
-	var counter int
 	var buff bytes.Buffer
 	buff.WriteString("{")
-	for field, messages := range e {
+	var node = e.ll.head
+	for node != nil {
+		var messages = e.kv[node.key]
 		buff.WriteString("\"")
-		buff.WriteString(field)
+		buff.WriteString(node.key)
 		buff.WriteString("\":[")
 		for i := 0; i < len(messages); i++ {
 			buff.WriteString(strconv.Quote(messages[i]))
@@ -61,10 +75,10 @@ func (e errs) Serialize() []byte {
 			}
 		}
 		buff.WriteString("]")
-		if counter < len(e)-1 {
+		if node.next != nil {
 			buff.WriteString(",")
 		}
-		counter++
+		node = node.next
 	}
 	buff.WriteString("}")
 	return buff.Bytes()
@@ -75,7 +89,7 @@ func (e errs) Has(field string) bool {
 }
 
 func (e errs) has(field string) bool {
-	var _, ok = e[field]
+	var _, ok = e.kv[field]
 	return ok
 }
 
@@ -85,9 +99,10 @@ func (e errs) Add(field, message string) {
 
 func (e errs) add(field, message string) {
 	if e.has(field) {
-		e[field] = append(e[field], message)
+		e.kv[field] = append(e.kv[field], message)
 	} else {
-		e[field] = []string{message}
+		e.kv[field] = []string{message}
+		e.ll.append(field)
 	}
 }
 
@@ -96,12 +111,13 @@ func (e errs) addBulk(field string, messages []string) {
 		return
 	}
 	if e.has(field) {
-		e[field] = append(e[field], messages...)
+		e.kv[field] = append(e.kv[field], messages...)
 	} else {
-		e[field] = messages
+		e.kv[field] = messages
+		e.ll.append(field)
 	}
 }
 
 func (e errs) empty() bool {
-	return len(e) == 0
+	return len(e.kv) == 0
 }

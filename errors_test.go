@@ -5,6 +5,17 @@ import (
 	"testing"
 )
 
+func newErrors(fields []string, msgs [][]string) errs {
+	if len(fields) != len(msgs) {
+		panic("make sure fields and msgs lengths equal")
+	}
+	var e = newErrs()
+	for i := 0; i < len(fields); i++ {
+		e.addBulk(fields[i], msgs[i])
+	}
+	return e
+}
+
 func Test_errors_MarshalJSON(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -13,19 +24,27 @@ func Test_errors_MarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Valid",
-			e: errs{
-				"A": []string{"B", "C", "D"},
-			},
+			name:    "first",
+			e:       newErrors([]string{"A"}, [][]string{{"B", "C", "D"}}),
 			want:    []byte(`{"A":["B","C","D"]}`),
 			wantErr: false,
 		},
 		{
-			name: "Invalid",
-			e: errs{
-				"A": []string{"B", "C", "D"},
-			},
-			want:    []byte(`{"A":["B","C","D"]}`),
+			name: "second",
+			e: newErrors(
+				[]string{"a", "b", "c"},
+				[][]string{
+					{"B", "C", "D"},
+					{"b", "c", "d"},
+					{"E", "F", "G"},
+				}),
+			want:    []byte(`{"a":["B","C","D"],"b":["b","c","d"],"c":["E","F","G"]}`),
+			wantErr: false,
+		},
+		{
+			name: "third",
+			e: newErrors([]string{}, [][]string{}),
+			want:    []byte("{}"),
 			wantErr: false,
 		},
 	}
@@ -51,17 +70,12 @@ func Test_errors_String(t *testing.T) {
 	}{
 		{
 			name: "First",
-			e: errs{
-				"A": []string{"B", "C", "D"},
-			},
+			e:    newErrors([]string{"A"}, [][]string{{"B", "C", "D"}}),
 			want: "B\nC\nD",
 		},
 		{
 			name: "Second",
-			e: errs{
-				"A": []string{},
-				"B": []string{},
-			},
+			e:    newErrors([]string{}, [][]string{}),
 			want: "",
 		},
 	}

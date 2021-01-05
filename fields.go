@@ -8,8 +8,8 @@ type Field interface {
 	Name() string
 	Value() interface{}
 	Validate(lc *i18n.Localizer, val interface{}) []string
-	Assign(val interface{}) error
 	Bound() bool
+	set(val interface{}) error
 }
 
 type field struct {
@@ -17,12 +17,6 @@ type field struct {
 	required bool
 	ftype    string
 	bound    bool
-	value    interface{}
-	vs       []Validator
-}
-
-func (f *field) Value() interface{} {
-	return f.value
 }
 
 func (f *field) Name() string {
@@ -31,13 +25,4 @@ func (f *field) Name() string {
 
 func (f *field) Bound() bool {
 	return f.bound
-}
-
-func (f *field) runValidators(lc *i18n.Localizer, errors []string) []string {
-	for _, validator := range f.vs {
-		if err := validator(lc, f.value); err != nil {
-			errors = append(errors, err.Error())
-		}
-	}
-	return errors
 }

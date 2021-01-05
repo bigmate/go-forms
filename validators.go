@@ -2,16 +2,13 @@ package forms
 
 import (
 	"errors"
-	"time"
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-type Validator func(lc *i18n.Localizer, val interface{}) error
-
-func Min(v int) Validator {
-	return func(lc *i18n.Localizer, val interface{}) error {
-		if len(val.(string)) < v {
+func Min(v int) CharValidator {
+	return func(lc *i18n.Localizer, val string) error {
+		if len(val) < v {
 			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID: "length_greater",
@@ -24,9 +21,9 @@ func Min(v int) Validator {
 	}
 }
 
-func Max(v int) Validator {
-	return func(lc *i18n.Localizer, val interface{}) error {
-		if len(val.(string)) > v {
+func Max(v int) CharValidator {
+	return func(lc *i18n.Localizer, val string) error {
+		if len(val) > v {
 			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID: "length_less",
@@ -39,9 +36,9 @@ func Max(v int) Validator {
 	}
 }
 
-func Within(l, h int) Validator {
-	return func(lc *i18n.Localizer, val interface{}) error {
-		if s := val.(string); len(s) < l || len(s) > h {
+func Within(l, h int) CharValidator {
+	return func(lc *i18n.Localizer, val string) error {
+		if len(val) < l || len(val) > h {
 			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID: "length_between",
@@ -57,23 +54,9 @@ func Within(l, h int) Validator {
 	}
 }
 
-func NumMin(v float64) Validator {
-	return func(lc *i18n.Localizer, val interface{}) error {
-		var err bool
-		switch value := val.(type) {
-		case float64:
-			err = value < v
-		case time.Duration:
-			err = float64(value) < v
-		case int64:
-			err = float64(value) < v
-		default:
-			return errors.New(
-				lc.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
-					ID: "numeric_value_expected",
-				}}))
-		}
-		if err {
+func NumMin(v float64) FloatValidator {
+	return func(lc *i18n.Localizer, val float64) error {
+		if val < v {
 			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID: "value_greater",
@@ -86,23 +69,9 @@ func NumMin(v float64) Validator {
 	}
 }
 
-func NumMax(v float64) Validator {
-	return func(lc *i18n.Localizer, val interface{}) error {
-		var err bool
-		switch value := val.(type) {
-		case float64:
-			err = value > v
-		case time.Duration:
-			err = float64(value) > v
-		case int64:
-			err = float64(value) > v
-		default:
-			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
-				ID: "numeric_value_expected",
-				Other: "expected numeric value",
-			}}))
-		}
-		if err {
+func NumMax(v float64) FloatValidator {
+	return func(lc *i18n.Localizer, val float64) error {
+		if val > v {
 			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID: "value_less",
@@ -115,23 +84,9 @@ func NumMax(v float64) Validator {
 	}
 }
 
-func NumWithin(l, h float64) Validator {
-	return func(lc *i18n.Localizer, val interface{}) error {
-		var err bool
-		switch value := val.(type) {
-		case float64:
-			err = value < l || value > h
-		case time.Duration:
-			err = float64(value) < l || float64(value) > h
-		case int64:
-			err = float64(value) < l || float64(value) > h
-		default:
-			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{DefaultMessage: &i18n.Message{
-				ID: "numeric_value_expected",
-				Other: "expected numeric value",
-			}}))
-		}
-		if err {
+func NumWithin(l, h float64) FloatValidator {
+	return func(lc *i18n.Localizer, val float64) error {
+		if val < l || val > h {
 			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID: "value_between",

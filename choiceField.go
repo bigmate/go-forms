@@ -6,8 +6,25 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
+type ChoiceValidator func(lc *i18n.Localizer, val interface{}) error
+
 type choiceField struct {
 	field
+	value interface{}
+	vs    []ChoiceValidator
+}
+
+func (f *choiceField) Value() interface{} {
+	return f.value
+}
+
+func (f *choiceField) runValidators(lc *i18n.Localizer, errors []string) []string {
+	for _, validator := range f.vs {
+		if err := validator(lc, f.value); err != nil {
+			errors = append(errors, err.Error())
+		}
+	}
+	return errors
 }
 
 func (f *choiceField) Validate(lc *i18n.Localizer, val interface{}) []string {
@@ -21,7 +38,7 @@ func (f *choiceField) Validate(lc *i18n.Localizer, val interface{}) []string {
 		}))
 		return errs
 	}
-	if f.Assign(val) != nil {
+	if f.set(val) != nil {
 		errs = append(errs, lc.MustLocalize(&i18n.LocalizeConfig{
 			MessageID:    typeMismatch,
 			TemplateData: f.ftype,
@@ -31,7 +48,7 @@ func (f *choiceField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	return f.runValidators(lc, errs)
 }
 
-func (f *choiceField) Assign(val interface{}) error {
+func (f *choiceField) set(val interface{}) error {
 	switch val.(type) {
 	case string, float64:
 		f.value = val
@@ -41,7 +58,7 @@ func (f *choiceField) Assign(val interface{}) error {
 	return typeMismatchError
 }
 
-func ChoiceField(name string, required bool, choices []interface{}, vs ...Validator) Field {
+func ChoiceField(name string, required bool, choices []interface{}, vs ...ChoiceValidator) Field {
 	var validator = func(lc *i18n.Localizer, val interface{}) error {
 		for _, choice := range choices {
 			if val == choice {
@@ -49,22 +66,22 @@ func ChoiceField(name string, required bool, choices []interface{}, vs ...Valida
 			}
 		}
 		return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
-			MessageID:      "value_one_of",
+			MessageID: "value_one_of",
 			DefaultMessage: &i18n.Message{
-				ID:   "value_one_of",
-				One:  "Value should be {{.}}",
+				ID:    "value_one_of",
+				One:   "Value should be {{.}}",
 				Other: "Value should be one of {{.}}",
 			},
 			TemplateData: choices,
 		}))
 	}
 	var f = &choiceField{
-		field{
+		field: field{
 			name:     name,
 			required: required,
 			ftype:    "String or Number",
-			vs:       []Validator{validator},
 		},
+		vs: []ChoiceValidator{validator},
 	}
 	f.vs = append(f.vs, vs...)
 	return f

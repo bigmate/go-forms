@@ -4,11 +4,28 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
+type ArrayValidator func(lc *i18n.Localizer, val []interface{}) error
+
 type arrayField struct {
 	field
+	value []interface{}
+	vs    []ArrayValidator
 }
 
-func (f *arrayField) Assign(val interface{}) error {
+func (f *arrayField) Value() interface{} {
+	return f.value
+}
+
+func (f *arrayField) runValidators(lc *i18n.Localizer, errors []string) []string {
+	for _, validator := range f.vs {
+		if err := validator(lc, f.value); err != nil {
+			errors = append(errors, err.Error())
+		}
+	}
+	return errors
+}
+
+func (f *arrayField) set(val interface{}) error {
 	if value, ok := val.([]interface{}); ok {
 		f.value = value
 		f.bound = true
@@ -28,7 +45,7 @@ func (f *arrayField) Validate(lc *i18n.Localizer, val interface{}) []string {
 		}))
 		return errors
 	}
-	if f.Assign(val) != nil {
+	if f.set(val) != nil {
 		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
 			MessageID:    typeMismatch,
 			TemplateData: f.ftype,
@@ -38,11 +55,13 @@ func (f *arrayField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	return f.runValidators(lc, errors)
 }
 
-func ArrayField(name string, required bool, vs ...Validator) Field {
-	return &arrayField{field{
-		name:     name,
-		required: required,
-		ftype:    "Array",
-		vs:       vs,
-	}}
+func ArrayField(name string, required bool, vs ...ArrayValidator) Field {
+	return &arrayField{
+		field: field{
+			name:     name,
+			required: required,
+			ftype:    "Array",
+		},
+		vs: vs,
+	}
 }

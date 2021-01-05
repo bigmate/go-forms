@@ -6,23 +6,39 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
+type BoolValidator func(lc *i18n.Localizer, val bool) error
+
 type boolField struct {
 	field
+	value bool
+	vs    []BoolValidator
 }
 
-func (f *boolField) Assign(val interface{}) error {
-	switch val.(type) {
+func (f *boolField) Value() interface{} {
+	return f.value
+}
+
+func (f *boolField) runValidators(lc *i18n.Localizer, errors []string) []string {
+	for _, validator := range f.vs {
+		if err := validator(lc, f.value); err != nil {
+			errors = append(errors, err.Error())
+		}
+	}
+	return errors
+}
+
+func (f *boolField) set(val interface{}) error {
+	switch value := val.(type) {
 	case bool:
-		f.value = val
+		f.value = value
 	case string:
-		var v, err = strconv.ParseBool(val.(string))
+		var v, err = strconv.ParseBool(value)
 		if err != nil {
 			return typeMismatchError
 		}
 		f.value = v
 	case float64:
-		var v = val.(float64)
-		if v <= 0 {
+		if value <= 0 {
 			f.value = false
 		} else {
 			f.value = true
@@ -45,7 +61,7 @@ func (f *boolField) Validate(lc *i18n.Localizer, val interface{}) []string {
 		}))
 		return errors
 	}
-	if f.Assign(val) != nil {
+	if f.set(val) != nil {
 		errors = append(errors, lc.MustLocalize(&i18n.LocalizeConfig{
 			MessageID:    typeMismatch,
 			TemplateData: f.ftype,
@@ -55,13 +71,13 @@ func (f *boolField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	return f.runValidators(lc, errors)
 }
 
-func BoolField(name string, required bool, vs ...Validator) Field {
+func BoolField(name string, required bool, vs ...BoolValidator) Field {
 	return &boolField{
-		field{
+		field: field{
 			name:     name,
 			required: required,
 			ftype:    "Boolean or Number",
-			vs:       vs,
 		},
+		vs: vs,
 	}
 }

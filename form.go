@@ -19,6 +19,7 @@ const (
 	mimeApplicationForm = "application/x-www-form-urlencoded"
 )
 
+// Form is an interface returned when New function is called.
 type Form interface {
 	Validate(r *http.Request) Result
 	BindValidators(validator ...FormValidator) Form
@@ -46,6 +47,7 @@ func newOrderedFields() orderedFields {
 	}
 }
 
+// New returns Form interface which is used to validate form.
 func New(fields ...Field) Form {
 	var form = &form{
 		fields:     newOrderedFields(),
@@ -65,6 +67,7 @@ type form struct {
 	cachedFields []Field // bound Fields
 }
 
+// Bind binds validated form values into struct.
 func (f *form) Bind(s interface{}) error {
 	var typ = reflect.TypeOf(s)
 	var val = reflect.ValueOf(s).Elem()
@@ -94,6 +97,8 @@ func (f *form) bind(str reflect.Value, strType reflect.Type) error {
 	return nil
 }
 
+// Validate validates the request against form.
+// It can detect contents of request.
 func (f *form) Validate(r *http.Request) Result {
 	var err = r.ParseForm()
 	var lc = i18n.NewLocalizer(bundle, r.Header.Get("Accept-Language"), "en")
@@ -160,6 +165,7 @@ func (f *form) validateForm(lc *i18n.Localizer, v url.Values) {
 	}
 }
 
+// MarshalJSON marshals fields that are bound.
 func (f *form) MarshalJSON() ([]byte, error) {
 	var buff bytes.Buffer
 	var i int
@@ -183,6 +189,8 @@ func (f *form) MarshalJSON() ([]byte, error) {
 	return buff.Bytes(), nil
 }
 
+// BindValidators binds form wide validators meaning
+// all form fields will be available.
 func (f *form) BindValidators(validators ...FormValidator) Form {
 	f.validators = append(f.validators, validators...)
 	return f
@@ -194,6 +202,7 @@ func (f *form) runFormValidators() {
 	}
 }
 
+// Fields returns only the fields that are bound.
 func (f *form) Fields() []Field {
 	if f.cachedFields != nil {
 		return f.cachedFields

@@ -28,7 +28,7 @@ func (f *arrayField) runValidators(lc *i18n.Localizer, errors []string) []string
 func (f *arrayField) set(val interface{}) error {
 	if value, ok := val.([]interface{}); ok {
 		f.value = value
-		f.bound = true
+		f.bnd = true
 		return nil
 	}
 	return typeMismatchError

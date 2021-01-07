@@ -48,7 +48,7 @@ func (f *datetimeField) set(val interface{}) error {
 	default:
 		return typeMismatchError
 	}
-	f.bound = true
+	f.bnd = true
 	return nil
 }
 
@@ -118,7 +118,7 @@ func (f *durationField) set(val interface{}) error {
 	default:
 		return typeMismatchError
 	}
-	f.bound = true
+	f.bnd = true
 	return nil
 }
 

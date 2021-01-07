@@ -52,7 +52,7 @@ func (f *choiceField) set(val interface{}) error {
 	switch val.(type) {
 	case string, float64:
 		f.value = val
-		f.bound = true
+		f.bnd = true
 		return nil
 	}
 	return typeMismatchError

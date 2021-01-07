@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func newErrors(fields []string, msgs [][]string) errs {
+func newErrors(fields []string, msgs [][]string) orderedErrs {
 	if len(fields) != len(msgs) {
 		panic("make sure fields and msgs lengths equal")
 	}
@@ -19,7 +19,7 @@ func newErrors(fields []string, msgs [][]string) errs {
 func Test_errors_MarshalJSON(t *testing.T) {
 	tests := []struct {
 		name    string
-		e       errs
+		e       orderedErrs
 		want    []byte
 		wantErr bool
 	}{
@@ -65,7 +65,7 @@ func Test_errors_MarshalJSON(t *testing.T) {
 func Test_errors_String(t *testing.T) {
 	tests := []struct {
 		name string
-		e    errs
+		e    orderedErrs
 		want string
 	}{
 		{

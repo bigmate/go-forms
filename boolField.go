@@ -46,7 +46,7 @@ func (f *boolField) set(val interface{}) error {
 	default:
 		return typeMismatchError
 	}
-	f.bound = true
+	f.bnd = true
 	return nil
 }
 

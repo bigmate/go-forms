@@ -8,7 +8,7 @@ type Field interface {
 	Name() string
 	Value() interface{}
 	Validate(lc *i18n.Localizer, val interface{}) []string
-	Bound() bool
+	bound() bool
 	set(val interface{}) error
 }
 
@@ -16,13 +16,13 @@ type field struct {
 	name     string
 	required bool
 	ftype    string
-	bound    bool
+	bnd      bool
 }
 
 func (f *field) Name() string {
 	return f.name
 }
 
-func (f *field) Bound() bool {
-	return f.bound
+func (f *field) bound() bool {
+	return f.bnd
 }

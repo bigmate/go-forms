@@ -31,7 +31,7 @@ func (f *charField) Value() interface{} {
 func (f *charField) set(val interface{}) error {
 	if value, ok := val.(string); ok {
 		f.value = value
-		f.bound = true
+		f.bnd = true
 		return nil
 	}
 	return typeMismatchError

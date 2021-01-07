@@ -29,23 +29,40 @@ type Form interface {
 	Fields() []Field
 }
 
+type orderedFields struct {
+	kv map[string]Field
+	ll *linkedList
+}
+
+func (of orderedFields) add(f Field) {
+	of.kv[f.Name()] = f
+	of.ll.append(f.Name())
+}
+
+func newOrderedFields() orderedFields {
+	return orderedFields{
+		kv: make(map[string]Field),
+		ll: newLinkedList(),
+	}
+}
+
 func New(fields ...Field) Form {
 	var form = &form{
-		fields:     make(map[string]Field),
+		fields:     newOrderedFields(),
 		validators: make([]FormValidator, 0),
 		errs:       newErrs(),
 	}
 	for _, f := range fields {
-		form.fields[f.Name()] = f
+		form.fields.add(f)
 	}
 	return form
 }
 
 type form struct {
-	fields       map[string]Field
+	fields       orderedFields
 	validators   []FormValidator
-	errs         errs
-	cachedFields []Field
+	errs         orderedErrs
+	cachedFields []Field // bound Fields
 }
 
 func (f *form) Bind(s interface{}) error {
@@ -60,7 +77,7 @@ func (f *form) Bind(s interface{}) error {
 func (f *form) bind(str reflect.Value, strType reflect.Type) error {
 	for i := 0; i < str.NumField(); i++ {
 		var fType = strType.Elem().Field(i)
-		var field, ok = f.fields[fType.Tag.Get("form")]
+		var field, ok = f.fields.kv[fType.Tag.Get("form")]
 		if !ok {
 			continue
 		}
@@ -114,18 +131,32 @@ func (f *form) validateJSON(lc *i18n.Localizer, rc io.Reader) {
 		}))
 		return
 	}
-	for _, field := range f.fields {
-		f.errs.addBulk(field.Name(), field.Validate(lc, dest[field.Name()]))
+	var node = f.fields.ll.head
+	var fields = f.fields.kv
+	for node != nil {
+		var key = node.key
+		f.errs.addBulk(key, fields[key].Validate(lc, dest[key]))
+		node = node.next
 	}
 }
 
-func (f *form) validateForm(lc *i18n.Localizer,v url.Values) {
-	for _, field := range f.fields {
-		if _, ok := v[field.Name()]; ok {
-			f.errs.addBulk(field.Name(), field.Validate(lc, v.Get(field.Name())))
+func (f *form) validateForm(lc *i18n.Localizer, v url.Values) {
+	var node = f.fields.ll.head
+	var fields = f.fields.kv
+	for node != nil {
+		var key = node.key
+		if _, ok := v[key]; ok {
+			f.errs.addBulk(
+				key,
+				fields[key].Validate(lc, fields[key].Validate(lc, v.Get(key))),
+			)
 		} else {
-			f.errs.addBulk(field.Name(), field.Validate(lc, nil))
+			f.errs.addBulk(
+				key,
+				fields[key].Validate(lc, fields[key].Validate(lc, nil)),
+			)
 		}
+		node = node.next
 	}
 }
 
@@ -133,22 +164,20 @@ func (f *form) MarshalJSON() ([]byte, error) {
 	var buff bytes.Buffer
 	var i int
 	buff.WriteByte('{')
-	for _, field := range f.fields {
-		if field.Bound() {
-			if i > 0 {
-				buff.WriteByte(',')
-			}
-			i++
-			buff.WriteByte('"')
-			buff.WriteString(field.Name())
-			buff.WriteByte('"')
-			buff.WriteByte(':')
-			var bs, err = json.Marshal(field.Value())
-			if err != nil {
-				return nil, err
-			}
-			buff.Write(bs)
+	for _, field := range f.Fields() {
+		if i > 0 {
+			buff.WriteByte(',')
 		}
+		i++
+		buff.WriteByte('"')
+		buff.WriteString(field.Name())
+		buff.WriteByte('"')
+		buff.WriteByte(':')
+		var bs, err = json.Marshal(field.Value())
+		if err != nil {
+			return nil, err
+		}
+		buff.Write(bs)
 	}
 	buff.WriteByte('}')
 	return buff.Bytes(), nil
@@ -161,7 +190,7 @@ func (f *form) BindValidators(validators ...FormValidator) Form {
 
 func (f *form) runFormValidators() {
 	for _, formValidator := range f.validators {
-		formValidator(f.errs, f.fields)
+		formValidator(f.errs, f.fields.kv)
 	}
 }
 
@@ -170,10 +199,14 @@ func (f *form) Fields() []Field {
 		return f.cachedFields
 	}
 	var fields = make([]Field, 0)
-	for _, field := range f.fields {
-		if field.Bound() {
+	var node = f.fields.ll.head
+	var fs = f.fields.kv
+	for node != nil {
+		var field = fs[node.key]
+		if field.bound() {
 			fields = append(fields, field)
 		}
+		node = node.next
 	}
 	f.cachedFields = fields
 	return fields

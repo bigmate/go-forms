@@ -42,8 +42,9 @@ func Within(l, h int) CharValidator {
 			return errors.New(lc.MustLocalize(&i18n.LocalizeConfig{
 				DefaultMessage: &i18n.Message{
 					ID:    "length_exact",
-					Other: "Length should be exactly {{.low}}",
+					Other: "Length should be exactly {{.}}",
 				},
+				TemplateData: l,
 			}))
 		}
 		if len(val) < l || len(val) > h {

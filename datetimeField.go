@@ -11,8 +11,9 @@ type TimeValidator func(lc *i18n.Localizer, val time.Time) error
 
 type datetimeField struct {
 	field
-	value time.Time
-	vs    []TimeValidator
+	layout string
+	value  time.Time
+	vs     []TimeValidator
 }
 
 func (f *datetimeField) Value() interface{} {
@@ -34,7 +35,7 @@ func (f *datetimeField) set(val interface{}) error {
 		if value == "now" {
 			f.value = time.Now()
 		} else {
-			var t, err = time.Parse(time.RFC3339, value)
+			var t, err = time.Parse(f.layout, value)
 			if err != nil {
 				return typeMismatchError
 			}
@@ -73,14 +74,15 @@ func (f *datetimeField) Validate(lc *i18n.Localizer, val interface{}) []string {
 	return f.runValidators(lc, errors)
 }
 
-func DateTimeField(name string, required bool, vs ...TimeValidator) Field {
+func DateTimeField(name, layout string, required bool, vs ...TimeValidator) Field {
 	return &datetimeField{
 		field: field{
 			name:     name,
 			required: required,
 			ftype:    "String or Number",
 		},
-		vs: vs,
+		layout: layout,
+		vs:     vs,
 	}
 }
 
